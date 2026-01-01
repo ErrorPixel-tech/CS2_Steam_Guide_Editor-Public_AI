@@ -958,8 +958,10 @@
 
         function createSteamHTML() {
             let text = ``;
-            text += `[h1]Название раздела: Название[/h1]\n`
-            text += `[h2]Заметки[/h2]\n`
+            text += `[h1]🟥 Заметки ⚠[/h1]\n`
+            text += `[list]`;
+            text += `[*] [b]Заметка[/b]`;
+            text += `[/list]`;
             text += `\n`;
             elements.html.textContent = text;
             const blocks = MOCKDATA[currentPage] || [];
