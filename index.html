@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -503,6 +504,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="page">
         <!-- УПРАВЛЕНИЕ СТРАНИЦАМИ -->
@@ -512,12 +514,7 @@
             </div>
             <div class="pages-tabs" id="pages-tabs"></div>
             <div class="pages-controls">
-                <input 
-                    type="text" 
-                    id="page-input" 
-                    placeholder="Название новой страницы..."
-                    maxlength="30"
-                />
+                <input type="text" id="page-input" placeholder="Название новой страницы..." maxlength="30" />
                 <button id="new-page-btn">+ Создать страницу</button>
             </div>
         </div>
@@ -525,7 +522,7 @@
         <!-- БЛОКИ -->
         <h1 style="color: var(--accent-primary); margin-bottom: var(--space-20);">Steam Guide Builder</h1>
         <ul id="blocks"></ul>
-        
+
         <button id="create-block-btn">+ Добавить блок</button>
 
         <!-- КОНТРОЛЫ -->
@@ -539,489 +536,491 @@
     </div>
 
     <script>
-const elements = {
-    createBlockBtn: document.querySelector('#create-block-btn'),
-    list: document.querySelector('#blocks'),
-    html: document.querySelector('#steam-html'),
-    delete: document.querySelector('#delete-btn'),
-    createHTMLButton: document.querySelector('#create-html-btn'),
-    newPageBtn: document.querySelector('#new-page-btn'),
-    pageInput: document.querySelector('#page-input'),
-    pagesTabs: document.querySelector('#pages-tabs'),
-};
+        const elements = {
+            createBlockBtn: document.querySelector('#create-block-btn'),
+            list: document.querySelector('#blocks'),
+            html: document.querySelector('#steam-html'),
+            delete: document.querySelector('#delete-btn'),
+            createHTMLButton: document.querySelector('#create-html-btn'),
+            newPageBtn: document.querySelector('#new-page-btn'),
+            pageInput: document.querySelector('#page-input'),
+            pagesTabs: document.querySelector('#pages-tabs'),
+        };
 
-const STORAGE_KEY = 'blocks';
-const PAGES_STORAGE_KEY = 'pages';
-const CURRENT_PAGE_KEY = 'currentPage';
+        const STORAGE_KEY = 'blocks';
+        const PAGES_STORAGE_KEY = 'pages';
+        const CURRENT_PAGE_KEY = 'currentPage';
 
-// РАДИО КНОПКИ
-const answers = [
-    { value: '🚬', text: '🚬' },
-    { value: '💣', text: '💣' },
-    { value: '🌟', text: '🌟' },
-    { value: '🔥', text: '🔥' },
-    { value: '🐀', text: '🐀' },
-];
+        // РАДИО КНОПКИ
+        const answers = [
+            { value: '🚬', text: '🚬' },
+            { value: '💣', text: '💣' },
+            { value: '🌟', text: '🌟' },
+            { value: '🔥', text: '🔥' },
+            { value: '🐀', text: '🐀' },
+        ];
 
-const mouseButtons = [
-    { value: '0', text: 'ЛКМ' },
-    { value: '1', text: 'ЛКМ + ПКМ' },
-    { value: '2', text: 'ПКМ' },
-];
+        const mouseButtons = [
+            { value: '0', text: 'ЛКМ' },
+            { value: '1', text: 'ЛКМ + ПКМ' },
+            { value: '2', text: 'ПКМ' },
+        ];
 
-const movement = [
-    { value: '0', text: 'Стой на месте' },
-    { value: '1', text: 'Прыжок' },
-    { value: '2', text: 'Прыжок + Вперёд' },
-    { value: '3', text: 'Вперёд' },
-    { value: '4', text: 'Shift + Вперёд' },
-    { value: '5', text: 'Другое' },
-];
+        const movement = [
+            { value: '0', text: 'Стой на месте' },
+            { value: '1', text: 'Прыжок' },
+            { value: '2', text: 'Прыжок + Вперёд' },
+            { value: '3', text: 'Вперёд' },
+            { value: '4', text: 'Shift + Вперёд' },
+            { value: '5', text: 'Другое' },
+        ];
 
-let MOCKDATA = {};
-let currentPage = 'default';
+        let MOCKDATA = {};
+        let currentPage = 'default';
 
-function createRadio(container, itemValue) {
-    const id = crypto.randomUUID();
-    const div = document.createElement('div');
-    div.classList.add("template__radio-container");
-    answers.forEach((item) => {
-        const label = document.createElement('label');
-        const input = document.createElement('input');
-        if (itemValue == item.text) {
-            input.checked = true;
+        function createRadio(container, itemValue) {
+            const id = crypto.randomUUID();
+            const div = document.createElement('div');
+            div.classList.add("template__radio-container");
+            answers.forEach((item) => {
+                const label = document.createElement('label');
+                const input = document.createElement('input');
+                if (itemValue == item.text) {
+                    input.checked = true;
+                }
+                input.type = 'radio';
+                input.name = 'answer' + id;
+                input.value = item.value;
+                input.classList.add("input-radio-icon");
+                input.classList.add("template__icon");
+                const text = document.createTextNode(' ' + item.text);
+                label.appendChild(text);
+                label.appendChild(input);
+                div.appendChild(label);
+            });
+            container.appendChild(div);
         }
-        input.type = 'radio';
-        input.name = 'answer' + id;
-        input.value = item.value;
-        input.classList.add("input-radio-icon");
-        input.classList.add("template__icon");
-        const text = document.createTextNode(' ' + item.text);
-        label.appendChild(text);
-        label.appendChild(input);
-        div.appendChild(label);
-    });
-    container.appendChild(div);
-}
 
-function createRadioMouse(container, itemValue) {
-    const id = crypto.randomUUID();
-    const div = document.createElement('div');
-    div.classList.add("template__radio-container");
-    mouseButtons.forEach((item) => {
-        const label = document.createElement('label');
-        const input = document.createElement('input');
-        if (itemValue == item.text) {
-            input.checked = true;
+        function createRadioMouse(container, itemValue) {
+            const id = crypto.randomUUID();
+            const div = document.createElement('div');
+            div.classList.add("template__radio-container");
+            mouseButtons.forEach((item) => {
+                const label = document.createElement('label');
+                const input = document.createElement('input');
+                if (itemValue == item.text) {
+                    input.checked = true;
+                }
+                input.type = 'radio';
+                input.name = 'mouseButton' + id;
+                input.value = item.text;
+                input.classList.add("input-radio-mousebytton");
+                input.classList.add("template__mouse-button");
+                const text = document.createTextNode(' ' + item.text);
+                label.appendChild(text);
+                label.appendChild(input);
+                div.appendChild(label);
+            });
+            container.appendChild(div);
         }
-        input.type = 'radio';
-        input.name = 'mouseButton' + id;
-        input.value = item.text;
-        input.classList.add("input-radio-mousebytton");
-        input.classList.add("template__mouse-button");
-        const text = document.createTextNode(' ' + item.text);
-        label.appendChild(text);
-        label.appendChild(input);
-        div.appendChild(label);
-    });
-    container.appendChild(div);
-}
 
-function createRadioMovement(container, itemValue) {
-    const id = crypto.randomUUID();
-    const div = document.createElement('div');
-    div.classList.add("template__radio-container");
-    movement.forEach((item) => {
-        const label = document.createElement('label');
-        const input = document.createElement('input');
-        if (itemValue == item.text) {
-            input.checked = true;
+        function createRadioMovement(container, itemValue) {
+            const id = crypto.randomUUID();
+            const div = document.createElement('div');
+            div.classList.add("template__radio-container");
+            movement.forEach((item) => {
+                const label = document.createElement('label');
+                const input = document.createElement('input');
+                if (itemValue == item.text) {
+                    input.checked = true;
+                }
+                input.type = 'radio';
+                input.name = 'movement' + id;
+                input.value = item.text;
+                input.classList.add("input-radio-movement");
+                input.classList.add("template__movement");
+                const text = document.createTextNode(' ' + item.text);
+                label.appendChild(text);
+                label.appendChild(input);
+                div.appendChild(label);
+            });
+            container.appendChild(div);
         }
-        input.type = 'radio';
-        input.name = 'movement' + id;
-        input.value = item.text;
-        input.classList.add("input-radio-movement");
-        input.classList.add("template__movement");
-        const text = document.createTextNode(' ' + item.text);
-        label.appendChild(text);
-        label.appendChild(input);
-        div.appendChild(label);
-    });
-    container.appendChild(div);
-}
 
-elements.createBlockBtn.addEventListener('click', function (event) {
-    const newItem = {
-        icon: "",
-        mouseButton: "ЛКМ",
-        movement: "Прыжок",
-        title: "",
-        subtitle: "",
-        imageId: "",
-        images: ["", ""],
-        keys: "[keys]",
-    };
-    MOCKDATA[currentPage].push(newItem);
-    saveState();
-    renderList();
-});
-
-function loadState() {
-    const savedPages = localStorage.getItem(PAGES_STORAGE_KEY);
-    const savedCurrent = localStorage.getItem(CURRENT_PAGE_KEY);
-    
-    if (savedPages) {
-        MOCKDATA = JSON.parse(savedPages);
-        currentPage = savedCurrent || 'default';
-    } else {
-        MOCKDATA = {
-            default: [{
-                icon: "🚬",
+        elements.createBlockBtn.addEventListener('click', function (event) {
+            const newItem = {
+                icon: "",
                 mouseButton: "ЛКМ",
                 movement: "Прыжок",
-                title: "Дым в окно",
-                subtitle: "Короткое текстовое описание раскидки",
+                title: "",
+                subtitle: "",
                 imageId: "",
-                images: ["[screenshot=3631986752;sizeFull,inline;https://images.steamusercontent.com/ugc/12387406899713426751/AFDC03049ECCF9512E2C47A06FEFE00F0A821C80/][/screenshot]", "[screenshot=3631986624;sizeFull,inline;https://images.steamusercontent.com/ugc/11813492859766757302/6C2588F3FFA4A0E3B64976991B24E7707D33F1B1/][/screenshot]"],
+                images: ["", ""],
                 keys: "[keys]",
-            }]
-        };
-        currentPage = 'default';
-    }
-}
+            };
+            MOCKDATA[currentPage].push(newItem);
+            saveState();
+            renderList();
+        });
 
-function saveState() {
-    localStorage.setItem(PAGES_STORAGE_KEY, JSON.stringify(MOCKDATA));
-    localStorage.setItem(CURRENT_PAGE_KEY, currentPage);
-    createSteamHTML();
-}
+        function loadState() {
+            const savedPages = localStorage.getItem(PAGES_STORAGE_KEY);
+            const savedCurrent = localStorage.getItem(CURRENT_PAGE_KEY);
 
-function renderList() {
-    elements.list.innerHTML = "";
-    const blocks = MOCKDATA[currentPage] || [];
-    blocks.forEach((item, index) => {
-        createBlock(item, index);
-    });
-    createSteamHTML();
-}
-
-function renderPageTabs() {
-    elements.pagesTabs.innerHTML = "";
-    Object.keys(MOCKDATA).forEach(pageName => {
-        const tab = document.createElement('div');
-        tab.classList.add('page-tab');
-        if (pageName === currentPage) {
-            tab.classList.add('active');
+            if (savedPages) {
+                MOCKDATA = JSON.parse(savedPages);
+                currentPage = savedCurrent || 'default';
+            } else {
+                MOCKDATA = {
+                    default: [{
+                        icon: "🚬",
+                        mouseButton: "ЛКМ",
+                        movement: "Прыжок",
+                        title: "Дым в окно",
+                        subtitle: "Короткое текстовое описание раскидки",
+                        imageId: "",
+                        images: ["[screenshot=3631986752;sizeFull,inline;https://images.steamusercontent.com/ugc/12387406899713426751/AFDC03049ECCF9512E2C47A06FEFE00F0A821C80/][/screenshot]", "[screenshot=3631986624;sizeFull,inline;https://images.steamusercontent.com/ugc/11813492859766757302/6C2588F3FFA4A0E3B64976991B24E7707D33F1B1/][/screenshot]"],
+                        keys: "[keys]",
+                    }]
+                };
+                currentPage = 'default';
+            }
         }
-        
-        const tabLabel = document.createElement('span');
-        tabLabel.textContent = pageName;
-        tabLabel.style.cursor = 'pointer';
-        tabLabel.addEventListener('click', () => {
+
+        function saveState() {
+            localStorage.setItem(PAGES_STORAGE_KEY, JSON.stringify(MOCKDATA));
+            localStorage.setItem(CURRENT_PAGE_KEY, currentPage);
+            createSteamHTML();
+        }
+
+        function renderList() {
+            elements.list.innerHTML = "";
+            const blocks = MOCKDATA[currentPage] || [];
+            blocks.forEach((item, index) => {
+                createBlock(item, index);
+            });
+            createSteamHTML();
+        }
+
+        function renderPageTabs() {
+            elements.pagesTabs.innerHTML = "";
+            Object.keys(MOCKDATA).forEach(pageName => {
+                const tab = document.createElement('div');
+                tab.classList.add('page-tab');
+                if (pageName === currentPage) {
+                    tab.classList.add('active');
+                }
+
+                const tabLabel = document.createElement('span');
+                tabLabel.textContent = pageName;
+                tabLabel.style.cursor = 'pointer';
+                tabLabel.addEventListener('click', () => {
+                    currentPage = pageName;
+                    saveState();
+                    renderPageTabs();
+                    renderList();
+                });
+
+                const closeBtn = document.createElement('button');
+                closeBtn.classList.add('page-tab-close');
+                closeBtn.textContent = '×';
+                closeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (Object.keys(MOCKDATA).length === 1) {
+                        alert('Нельзя удалить последнюю страницу!');
+                        return;
+                    }
+                    if (confirm(`Удалить страницу "${pageName}"? Все блоки будут потеряны.`)) {
+                        delete MOCKDATA[pageName];
+                        if (currentPage === pageName) {
+                            currentPage = Object.keys(MOCKDATA)[0];
+                        }
+                        saveState();
+                        renderPageTabs();
+                        renderList();
+                    }
+                });
+
+                tab.appendChild(tabLabel);
+                tab.appendChild(closeBtn);
+                elements.pagesTabs.appendChild(tab);
+            });
+        }
+
+        elements.newPageBtn.addEventListener('click', () => {
+            const pageName = elements.pageInput.value.trim();
+            if (!pageName) {
+                alert('Введите название страницы!');
+                return;
+            }
+            if (MOCKDATA[pageName]) {
+                alert('Страница с таким названием уже существует!');
+                return;
+            }
+            MOCKDATA[pageName] = [];
             currentPage = pageName;
+            elements.pageInput.value = '';
             saveState();
             renderPageTabs();
             renderList();
         });
-        
-        const closeBtn = document.createElement('button');
-        closeBtn.classList.add('page-tab-close');
-        closeBtn.textContent = '×';
-        closeBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (Object.keys(MOCKDATA).length === 1) {
-                alert('Нельзя удалить последнюю страницу!');
-                return;
+
+        elements.pageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                elements.newPageBtn.click();
             }
-            if (confirm(`Удалить страницу "${pageName}"? Все блоки будут потеряны.`)) {
-                delete MOCKDATA[pageName];
-                if (currentPage === pageName) {
-                    currentPage = Object.keys(MOCKDATA)[0];
+        });
+
+        function createBlock(item, index) {
+            const li = document.createElement('li');
+            li.classList.add('block');
+            li.dataset.id = index;
+            li.appendChild(createTemplate(item, index));
+            li.appendChild(createPreview(item, index));
+            elements.list.appendChild(li);
+        }
+
+        function createTemplate(item, index) {
+            const template = document.createElement('div');
+            template.classList.add('template');
+
+            // DELETE BUTTON
+            const deleteBtn = document.createElement('button');
+            deleteBtn.classList.add('block-delete-btn');
+            deleteBtn.textContent = '✕ Удалить';
+            deleteBtn.addEventListener('click', () => {
+                if (confirm('Удалить этот блок?')) {
+                    MOCKDATA[currentPage].splice(index, 1);
+                    saveState();
+                    renderList();
                 }
+            });
+            template.appendChild(deleteBtn);
+
+            createRadio(template, item.icon);
+            createRadioMouse(template, item.mouseButton);
+            createRadioMovement(template, item.movement);
+
+            const title = document.createElement('input');
+            title.classList.add('template__input--title');
+            title.classList.add('template__input');
+            title.value = item.title;
+            title.placeholder = "НАЗВАНИЕ";
+
+            const subtitle = document.createElement('textarea');
+            subtitle.classList.add('template__input--subtitle');
+            subtitle.classList.add('template__input');
+            subtitle.value = item.subtitle;
+            subtitle.placeholder = "ОПИСАНИЕ";
+
+            const imgId = document.createElement('input');
+            imgId.classList.add('template__input--img-id');
+            imgId.classList.add('template__input');
+            imgId.value = "НЕ ИСПОЛЬЗОВАТЬ. УДАЛИТЬ. НЕ ТРОГАТЬ";
+
+            const img_1 = document.createElement('input');
+            img_1.classList.add('template__input--img-1');
+            img_1.classList.add('template__input');
+            img_1.value = item.images[0];
+            img_1.placeholder = "ССЫЛКА НА КАРТИНКУ. КУДА ЦЕЛИТЬСЯ";
+
+            const img_2 = document.createElement('input');
+            img_2.classList.add('template__input--img-2');
+            img_2.classList.add('template__input');
+            img_2.placeholder = "ССЫЛКА НА ВТОРУЮ КАРТИНКУ (ЕСЛИ НАДО). КУДА ВСТАВАТЬ";
+            img_2.value = item.images[1];
+
+            template.appendChild(title);
+            template.appendChild(subtitle);
+            template.appendChild(imgId);
+            template.appendChild(img_1);
+            template.appendChild(img_2);
+            return template;
+        }
+
+        function createPreview(item, index) {
+            const preview = document.createElement('div');
+            preview.classList.add('preview');
+
+            const icon = document.createElement('span');
+            icon.classList.add('preview__icon');
+            icon.textContent = `${item.icon}`;
+
+            const mouseButton = document.createElement('div');
+            mouseButton.classList.add('preview__mouse-button');
+            mouseButton.textContent = `Мышь: ${item.mouseButton} `;
+
+            const movement = document.createElement('div');
+            movement.classList.add('preview__movement');
+            movement.textContent = `Движение: ${item.movement} `;
+
+            const title = document.createElement('p');
+            title.classList.add('preview__title');
+            title.textContent = item.title;
+
+            const subtitle = document.createElement('p');
+            subtitle.classList.add('preview__subtitle');
+            subtitle.textContent = item.subtitle;
+
+            const gallery = document.createElement('div');
+            gallery.classList.add('preview__gallery');
+
+            const img_1 = document.createElement('img');
+            img_1.classList.add('preview__img-1');
+            img_1.src = steamImageHTMLToImageLink(item.images[0]);
+            img_1.alt = "image-1";
+
+            const img_2 = document.createElement('img');
+            img_2.classList.add('preview__img-2');
+            img_2.src = steamImageHTMLToImageLink(item.images[1]);
+            img_2.alt = "image-2";
+
+            gallery.appendChild(img_1);
+            gallery.appendChild(img_2);
+
+            preview.appendChild(icon);
+            preview.appendChild(title);
+            preview.appendChild(subtitle);
+            preview.appendChild(mouseButton);
+            preview.appendChild(movement);
+            preview.appendChild(gallery);
+            return preview;
+        }
+
+        elements.list.addEventListener("input", function (event) {
+            const input = event.target;
+            const li = input.closest('li');
+            const index = parseInt(li.dataset.id);
+
+            if (input.classList.contains('template__input--title')) {
+                const p = li.querySelector('.preview__title');
+                let text = input.value.trim();
+                text = text.charAt(0).toUpperCase() + text.slice(1);
+                p.textContent = text;
+                MOCKDATA[currentPage][index].title = text;
+            }
+
+            if (input.classList.contains('template__input--subtitle')) {
+                const p = li.querySelector('.preview__subtitle');
+                let text = input.value.trim();
+                text = text.charAt(0).toUpperCase() + text.slice(1);
+                p.textContent = text;
+                MOCKDATA[currentPage][index].subtitle = text;
+            }
+
+            if (input.classList.contains('template__input--img-id')) {
+                MOCKDATA[currentPage][index].imageId = input.value;
+            }
+
+            if (input.classList.contains('template__input--img-1')) {
+                const img = li.querySelector('.preview__img-1');
+                img.src = steamImageHTMLToImageLink(input.value);
+                img.alt = "image-1";
+                MOCKDATA[currentPage][index].images[0] = input.value.trim();
+            }
+
+            if (input.classList.contains('template__input--img-2')) {
+                const img = li.querySelector('.preview__img-2');
+                img.src = steamImageHTMLToImageLink(input.value);
+                img.alt = "image-2";
+                MOCKDATA[currentPage][index].images[1] = input.value.trim();
+            }
+
+            saveState();
+        });
+
+        elements.list.addEventListener('change', (event) => {
+            const target = event.target;
+            const li = target.closest('li');
+            const index = parseInt(li.dataset.id);
+
+            if (target.matches('input[type="radio"].input-radio-movement')) {
+                const movement = li.querySelector('.preview__movement');
+                movement.textContent = `Движение: ${target.value}`;
+                MOCKDATA[currentPage][index].movement = target.value;
                 saveState();
-                renderPageTabs();
+            }
+
+            if (target.matches('input[type="radio"].input-radio-mousebytton')) {
+                const mouseButton = li.querySelector('.preview__mouse-button');
+                mouseButton.textContent = `Мышь: ${target.value}`;
+                MOCKDATA[currentPage][index].mouseButton = target.value;
+                saveState();
+            }
+
+            if (target.matches('input[type="radio"].input-radio-icon')) {
+                const icon = li.querySelector('.preview__icon');
+                icon.textContent = `${target.value} `;
+                MOCKDATA[currentPage][index].icon = target.value;
+                saveState();
+            }
+        });
+
+        function createSteamHTML() {
+            let text = ``;
+            text += `[h1]Название раздела: Название[/h1]\n`
+            text += `[h2]Заметки[/h2]\n`
+            text += `\n`;
+            elements.html.textContent = text;
+            const blocks = MOCKDATA[currentPage] || [];
+            blocks.forEach((item, index) => {
+                let text = createHTMLForSingleBlock(item, index);
+                elements.html.textContent += text;
+            });
+        }
+
+        function createHTMLForSingleBlock(item, index) {
+            let text = ``;
+            text += `[h1]${item.icon} ${item.title}[/h1]\n`;
+            text += item.subtitle ? `${item.subtitle}\n` : ``;
+            text += `\n`;
+            text += item.mouseButton ? `Мышь: ${item.mouseButton} \n` : ``;
+            text += item.movement ? `Движение: ${item.movement} \n` : ``;
+            text += `\n`;
+            text += `[table]\n`;
+            text += item.images[0] ? `[tr][td]${item.images[0]}[/td][/tr]\n` : `[tr][td]ТУТ ДОЛЖНА БЫТЬ КАРТИНКА[/td][/tr]\n`;
+            text += item.images[1] ? `[tr][td]${item.images[1]}[/td][/tr]\n` : ``;
+            text += `[/table]\n`;
+            text += `[hr][/hr]\n`;
+            return text;
+        }
+
+        elements.delete.addEventListener('click', function (event) {
+            event.preventDefault();
+            if (confirm("Удалить все блоки на этой странице?")) {
+                MOCKDATA[currentPage] = [];
+                saveState();
                 renderList();
             }
         });
-        
-        tab.appendChild(tabLabel);
-        tab.appendChild(closeBtn);
-        elements.pagesTabs.appendChild(tab);
-    });
-}
 
-elements.newPageBtn.addEventListener('click', () => {
-    const pageName = elements.pageInput.value.trim();
-    if (!pageName) {
-        alert('Введите название страницы!');
-        return;
-    }
-    if (MOCKDATA[pageName]) {
-        alert('Страница с таким названием уже существует!');
-        return;
-    }
-    MOCKDATA[pageName] = [];
-    currentPage = pageName;
-    elements.pageInput.value = '';
-    saveState();
-    renderPageTabs();
-    renderList();
-});
+        elements.createHTMLButton.addEventListener('click', async function (event) {
+            event.preventDefault();
+            createSteamHTML();
+            const text = elements.html.textContent;
+            try {
+                await navigator.clipboard.writeText(text);
+                elements.createHTMLButton.textContent = 'Скопировано!';
+                setTimeout(() => (elements.createHTMLButton.textContent = 'Скопировать код'), 1500);
+            } catch (err) {
+                console.error('Не удалось скопировать: ', err);
+            }
+        });
 
-elements.pageInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        elements.newPageBtn.click();
-    }
-});
+        function steamImageHTMLToImageLink(string) {
+            const match = string.match(/https?:\/\/[^;[\]]+/);
+            const url = match ? match[0] : string;
+            return url;
+        }
 
-function createBlock(item, index) {
-    const li = document.createElement('li');
-    li.classList.add('block');
-    li.dataset.id = index;
-    li.appendChild(createTemplate(item, index));
-    li.appendChild(createPreview(item, index));
-    elements.list.appendChild(li);
-}
-
-function createTemplate(item, index) {
-    const template = document.createElement('div');
-    template.classList.add('template');
-
-    // DELETE BUTTON
-    const deleteBtn = document.createElement('button');
-    deleteBtn.classList.add('block-delete-btn');
-    deleteBtn.textContent = '✕ Удалить';
-    deleteBtn.addEventListener('click', () => {
-        if (confirm('Удалить этот блок?')) {
-            MOCKDATA[currentPage].splice(index, 1);
-            saveState();
+        function init() {
+            loadState();
+            renderPageTabs();
             renderList();
         }
-    });
-    template.appendChild(deleteBtn);
 
-    createRadio(template, item.icon);
-    createRadioMouse(template, item.mouseButton);
-    createRadioMovement(template, item.movement);
-
-    const title = document.createElement('input');
-    title.classList.add('template__input--title');
-    title.classList.add('template__input');
-    title.value = item.title;
-    title.placeholder = "НАЗВАНИЕ";
-
-    const subtitle = document.createElement('textarea');
-    subtitle.classList.add('template__input--subtitle');
-    subtitle.classList.add('template__input');
-    subtitle.value = item.subtitle;
-    subtitle.placeholder = "ОПИСАНИЕ";
-
-    const imgId = document.createElement('input');
-    imgId.classList.add('template__input--img-id');
-    imgId.classList.add('template__input');
-    imgId.value = "НЕ ИСПОЛЬЗОВАТЬ. УДАЛИТЬ. НЕ ТРОГАТЬ";
-
-    const img_1 = document.createElement('input');
-    img_1.classList.add('template__input--img-1');
-    img_1.classList.add('template__input');
-    img_1.value = item.images[0];
-    img_1.placeholder = "ССЫЛКА НА КАРТИНКУ. КУДА ЦЕЛИТЬСЯ";
-
-    const img_2 = document.createElement('input');
-    img_2.classList.add('template__input--img-2');
-    img_2.classList.add('template__input');
-    img_2.placeholder = "ССЫЛКА НА ВТОРУЮ КАРТИНКУ (ЕСЛИ НАДО). КУДА ВСТАВАТЬ";
-    img_2.value = item.images[1];
-
-    template.appendChild(title);
-    template.appendChild(subtitle);
-    template.appendChild(imgId);
-    template.appendChild(img_1);
-    template.appendChild(img_2);
-    return template;
-}
-
-function createPreview(item, index) {
-    const preview = document.createElement('div');
-    preview.classList.add('preview');
-
-    const icon = document.createElement('span');
-    icon.classList.add('preview__icon');
-    icon.textContent = `${item.icon}`;
-
-    const mouseButton = document.createElement('div');
-    mouseButton.classList.add('preview__mouse-button');
-    mouseButton.textContent = `Мышь: ${item.mouseButton} `;
-
-    const movement = document.createElement('div');
-    movement.classList.add('preview__movement');
-    movement.textContent = `Движение: ${item.movement} `;
-
-    const title = document.createElement('p');
-    title.classList.add('preview__title');
-    title.textContent = item.title;
-
-    const subtitle = document.createElement('p');
-    subtitle.classList.add('preview__subtitle');
-    subtitle.textContent = item.subtitle;
-
-    const gallery = document.createElement('div');
-    gallery.classList.add('preview__gallery');
-
-    const img_1 = document.createElement('img');
-    img_1.classList.add('preview__img-1');
-    img_1.src = steamImageHTMLToImageLink(item.images[0]);
-    img_1.alt = "image-1";
-
-    const img_2 = document.createElement('img');
-    img_2.classList.add('preview__img-2');
-    img_2.src = steamImageHTMLToImageLink(item.images[1]);
-    img_2.alt = "image-2";
-
-    gallery.appendChild(img_1);
-    gallery.appendChild(img_2);
-
-    preview.appendChild(icon);
-    preview.appendChild(title);
-    preview.appendChild(subtitle);
-    preview.appendChild(mouseButton);
-    preview.appendChild(movement);
-    preview.appendChild(gallery);
-    return preview;
-}
-
-elements.list.addEventListener("input", function (event) {
-    const input = event.target;
-    const li = input.closest('li');
-    const index = parseInt(li.dataset.id);
-
-    if (input.classList.contains('template__input--title')) {
-        const p = li.querySelector('.preview__title');
-        let text = input.value.trim();
-        text = text.charAt(0).toUpperCase() + text.slice(1);
-        p.textContent = text;
-        MOCKDATA[currentPage][index].title = text;
-    }
-
-    if (input.classList.contains('template__input--subtitle')) {
-        const p = li.querySelector('.preview__subtitle');
-        let text = input.value.trim();
-        text = text.charAt(0).toUpperCase() + text.slice(1);
-        p.textContent = text;
-        MOCKDATA[currentPage][index].subtitle = text;
-    }
-
-    if (input.classList.contains('template__input--img-id')) {
-        MOCKDATA[currentPage][index].imageId = input.value;
-    }
-
-    if (input.classList.contains('template__input--img-1')) {
-        const img = li.querySelector('.preview__img-1');
-        img.src = steamImageHTMLToImageLink(input.value);
-        img.alt = "image-1";
-        MOCKDATA[currentPage][index].images[0] = input.value.trim();
-    }
-
-    if (input.classList.contains('template__input--img-2')) {
-        const img = li.querySelector('.preview__img-2');
-        img.src = steamImageHTMLToImageLink(input.value);
-        img.alt = "image-2";
-        MOCKDATA[currentPage][index].images[1] = input.value.trim();
-    }
-
-    saveState();
-});
-
-elements.list.addEventListener('change', (event) => {
-    const target = event.target;
-    const li = target.closest('li');
-    const index = parseInt(li.dataset.id);
-
-    if (target.matches('input[type="radio"].input-radio-movement')) {
-        const movement = li.querySelector('.preview__movement');
-        movement.textContent = `Движение: ${target.value}`;
-        MOCKDATA[currentPage][index].movement = target.value;
-        saveState();
-    }
-
-    if (target.matches('input[type="radio"].input-radio-mousebytton')) {
-        const mouseButton = li.querySelector('.preview__mouse-button');
-        mouseButton.textContent = `Мышь: ${target.value}`;
-        MOCKDATA[currentPage][index].mouseButton = target.value;
-        saveState();
-    }
-
-    if (target.matches('input[type="radio"].input-radio-icon')) {
-        const icon = li.querySelector('.preview__icon');
-        icon.textContent = `${target.value} `;
-        MOCKDATA[currentPage][index].icon = target.value;
-        saveState();
-    }
-});
-
-function createSteamHTML() {
-    elements.html.textContent = '';
-    const blocks = MOCKDATA[currentPage] || [];
-    blocks.forEach((item, index) => {
-        let text = createHTMLForSingleBlock(item, index);
-        elements.html.textContent += text;
-    });
-}
-
-function createHTMLForSingleBlock(item, index) {
-    let text = ``;
-    text += `[h1]Название раздела: Название[/h1]\n`
-    text += `[h2]Заметки[/h2]\n`
-    text += `\n`;
-    text += `[h1]${item.icon} ${item.title}[/h1]\n`;
-    text += item.subtitle ? `${item.subtitle}\n` : ``;
-    text += `\n`;
-    text += item.mouseButton ? `Мышь: ${item.mouseButton} \n` : ``;
-    text += item.movement ? `Движение: ${item.movement} \n` : ``;
-    text += `\n`;
-    text += `[table]\n`;
-    text += item.images[0] ? `[tr][td]${item.images[0]}[/td][/tr]\n` : `[tr][td]ТУТ ДОЛЖНА БЫТЬ КАРТИНКА[/td][/tr]\n`;
-    text += item.images[1] ? `[tr][td]${item.images[1]}[/td][/tr]\n` : ``;
-    text += `[/table]\n`;
-    text += `[hr][/hr]\n`;
-    return text;
-}
-
-elements.delete.addEventListener('click', function (event) {
-    event.preventDefault();
-    if (confirm("Удалить все блоки на этой странице?")) {
-        MOCKDATA[currentPage] = [];
-        saveState();
-        renderList();
-    }
-});
-
-elements.createHTMLButton.addEventListener('click', async function (event) {
-    event.preventDefault();
-    createSteamHTML();
-    const text = elements.html.textContent;
-    try {
-        await navigator.clipboard.writeText(text);
-        elements.createHTMLButton.textContent = 'Скопировано!';
-        setTimeout(() => (elements.createHTMLButton.textContent = 'Скопировать код'), 1500);
-    } catch (err) {
-        console.error('Не удалось скопировать: ', err);
-    }
-});
-
-function steamImageHTMLToImageLink(string) {
-    const match = string.match(/https?:\/\/[^;[\]]+/);
-    const url = match ? match[0] : string;
-    return url;
-}
-
-function init() {
-    loadState();
-    renderPageTabs();
-    renderList();
-}
-
-init();
+        init();
     </script>
 </body>
+
 </html>
