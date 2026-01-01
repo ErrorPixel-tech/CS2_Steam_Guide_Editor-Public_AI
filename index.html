@@ -970,6 +970,9 @@ function createSteamHTML() {
 
 function createHTMLForSingleBlock(item, index) {
     let text = ``;
+    text += `[h1]Название раздела: Название[/h1]\n`
+    text += `[h2]Заметки[/h2]\n`
+    text += `\n`;
     text += `[h1]${item.icon} ${item.title}[/h1]\n`;
     text += item.subtitle ? `${item.subtitle}\n` : ``;
     text += `\n`;
