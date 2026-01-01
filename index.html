@@ -977,7 +977,7 @@ function createHTMLForSingleBlock(item, index) {
     text += item.movement ? `Движение: ${item.movement} \n` : ``;
     text += `\n`;
     text += `[table]\n`;
-    text += item.images[0] ? `[tr][td]${item.images[0]}[/td][/tr]\n` : `ТУТ ДОЛЖНА БЫТЬ КАРТИНКА\n`;
+    text += item.images[0] ? `[tr][td]${item.images[0]}[/td][/tr]\n` : `[tr][td]ТУТ ДОЛЖНА БЫТЬ КАРТИНКА[/td][/tr]\n`;
     text += item.images[1] ? `[tr][td]${item.images[1]}[/td][/tr]\n` : ``;
     text += `[/table]\n`;
     text += `[hr][/hr]\n`;
